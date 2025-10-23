@@ -25,7 +25,7 @@ Your Shopify access tokens are now protected and won't be committed to GitHub.
 3. Click **New repository secret**
 4. Add your secret:
    - **Name**: `SHOPIFY_TOKEN_FR`
-   - **Value**: `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`
+   - **Value**: `xxx`
 5. Click **Add secret**
 
 ### Step 2: Push to GitHub
@@ -62,7 +62,7 @@ python generate_feeds.py
 ### Testing with Environment Variables
 ```bash
 # Simulates GitHub Actions environment
-export SHOPIFY_TOKEN_FR="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"
+export SHOPIFY_TOKEN_FR="xxx"
 mv config.local.yaml config.local.yaml.bak  # Temporarily hide local config
 python generate_feeds.py
 mv config.local.yaml.bak config.local.yaml  # Restore
