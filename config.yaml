@@ -1,0 +1,15 @@
+# Shopify store feed configuration
+# Add your stores below. For each store, provide:
+# - name: a unique identifier
+# - shop_domain: your-store.myshopify.com
+# - api_key: Shopify Admin API key
+# - api_password: Shopify Admin API password
+# - language: e.g. en, fr, de
+# - currency: e.g. USD, EUR, DKK
+stores:
+  - name: FR
+    shop_domain: bisgaardshoes-fr.myshopify.com
+    access_token: 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
+    language: fr
+    currency: EUR
+# Add more stores as needed

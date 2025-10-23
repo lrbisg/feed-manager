@@ -1,0 +1,38 @@
+channels:
+  google:
+    fields:
+      - id: variant.id
+      - item_group_id: id
+      - title: title
+      - description: body_html
+      - link: "https://{shop_domain}/products/{handle}?variant={variant.id}"
+      - image_link: images[0].src
+      - availability: availability
+      - price: "{variant.price} {currency}"
+      - sale_price: "{variant.compare_at_price} {currency}"
+      - brand: vendor
+      - gtin: variant.barcode
+      - mpn: variant.sku
+      - condition: 'new'
+      - product_type: product_type
+      - google_product_category: google_product_category
+      - color: color
+      - size: size
+      - age_group: 'adult'
+      - gender: 'unisex'
+      - material: material
+      - pattern: pattern
+  meta:
+    fields:
+      - id: variant.id
+      - item_group_id: id
+      - title: title
+      - description: body_html
+      - link: "https://{shop_domain}/products/{handle}?variant={variant.id}"
+      - image_url: images[0].src
+      - availability: availability
+      - price: "{variant.price} {currency}"
+      - brand: vendor
+      - condition: 'new'
+      - color: color
+      - size: size

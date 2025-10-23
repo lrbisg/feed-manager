@@ -1,0 +1,65 @@
+name: Generate and Publish Product Feeds
+
+on:
+  # Run on schedule (every 6 hours)
+  schedule:
+    - cron: '0 */6 * * *'  # At minute 0 past every 6th hour
+
+  # Allow manual trigger
+  workflow_dispatch:
+
+  # Run on push to main (optional - remove if you don't want this)
+  push:
+    branches:
+      - main
+    paths:
+      - 'generate_feeds.py'
+      - 'channel_mappings.yaml'
+      - 'config.yaml'
+
+# Permissions needed for GitHub Pages deployment
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  generate-feeds:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Generate feeds
+        run: |
+          python generate_feeds.py
+        env:
+          # Shopify credentials are read from config.yaml
+          PYTHONUNBUFFERED: 1
+
+      - name: Commit and push feeds to docs/
+        run: |
+          git config user.name "GitHub Actions Bot"
+          git config user.email "actions@github.com"
+          git add docs/
+          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Auto-update feeds [skip ci]"
+          git push
+
+      - name: Upload feed artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: product-feeds
+          path: feeds/
+          retention-days: 30
+        if: always()  # Upload even if previous steps fail

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Product Feeds</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            overflow: hidden;
+        }
+
+        header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 2rem;
+            margin-bottom: 0.5rem;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 1.1rem;
+        }
+
+        .content {
+            padding: 2rem;
+        }
+
+        .feed-section {
+            margin-bottom: 2rem;
+        }
+
+        .feed-section h2 {
+            color: #333;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #667eea;
+        }
+
+        .feed-list {
+            list-style: none;
+        }
+
+        .feed-item {
+            background: #f8f9fa;
+            margin-bottom: 1rem;
+            padding: 1.25rem;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            transition: all 0.3s ease;
+        }
+
+        .feed-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .feed-title {
+            font-weight: 600;
+            color: #333;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .feed-url {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .feed-url a {
+            color: #667eea;
+            text-decoration: none;
+            word-break: break-all;
+            flex: 1;
+            font-family: 'Monaco', 'Courier New', monospace;
+            font-size: 0.9rem;
+        }
+
+        .feed-url a:hover {
+            text-decoration: underline;
+        }
+
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            transition: background 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .copy-btn:hover {
+            background: #5568d3;
+        }
+
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+
+        .info-box {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 1rem;
+            margin-top: 2rem;
+            border-radius: 4px;
+        }
+
+        .info-box h3 {
+            color: #1976d2;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box p {
+            color: #555;
+            margin-bottom: 0.5rem;
+        }
+
+        .info-box ul {
+            margin-left: 1.5rem;
+            color: #555;
+        }
+
+        .update-time {
+            text-align: center;
+            color: #666;
+            font-size: 0.9rem;
+            padding: 1rem;
+            background: #f8f9fa;
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 1rem;
+            }
+
+            .feed-url {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .copy-btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>📦 Product Feeds</h1>
+            <p>Automated Shopify feed generation</p>
+        </header>
+
+        <div class="content">
+            <div class="feed-section">
+                <h2>Available Feeds</h2>
+                <ul class="feed-list" id="feedList">
+                    <!-- Feeds will be populated by JavaScript -->
+                </ul>
+            </div>
+
+            <div class="info-box">
+                <h3>ℹ️ Using These Feeds</h3>
+                <p><strong>Google Merchant Center:</strong></p>
+                <ul>
+                    <li>Go to Products → Feeds → Add Feed</li>
+                    <li>Select "Scheduled fetch"</li>
+                    <li>Paste the Google feed URL above</li>
+                    <li>Set schedule to every 12-24 hours</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>Meta Commerce Manager:</strong></p>
+                <ul>
+                    <li>Go to Catalog → Data Sources → Add Feed</li>
+                    <li>Choose "Set a schedule"</li>
+                    <li>Paste the Meta feed URL above</li>
+                    <li>Set update frequency to daily</li>
+                </ul>
+                <p style="margin-top: 1rem;"><strong>Note:</strong> Feeds are compressed (.gz) but Google and Meta will automatically decompress them.</p>
+            </div>
+        </div>
+
+        <div class="update-time" id="updateTime">
+            Feeds updated automatically every 6 hours
+        </div>
+    </div>
+
+    <script>
+        // Auto-detect feeds in the same directory
+        const baseUrl = window.location.origin + window.location.pathname.replace('/index.html', '').replace(/\/$/, '');
+
+        const feeds = [
+            { name: 'FR - Google Shopping', file: 'FR_google_fr_EUR.xml.gz', channel: 'Google' },
+            { name: 'FR - Meta (Facebook)', file: 'FR_meta_fr_EUR.xml.gz', channel: 'Meta' }
+        ];
+
+        const feedList = document.getElementById('feedList');
+
+        feeds.forEach(feed => {
+            const url = `${baseUrl}/${feed.file}`;
+
+            const li = document.createElement('li');
+            li.className = 'feed-item';
+            li.innerHTML = `
+                <div class="feed-title">${feed.name}</div>
+                <div class="feed-url">
+                    <a href="${url}" target="_blank">${url}</a>
+                    <button class="copy-btn" onclick="copyToClipboard('${url}', this)">Copy</button>
+                </div>
+            `;
+            feedList.appendChild(li);
+        });
+
+        function copyToClipboard(text, button) {
+            navigator.clipboard.writeText(text).then(() => {
+                button.textContent = '✓ Copied!';
+                button.classList.add('copied');
+                setTimeout(() => {
+                    button.textContent = 'Copy';
+                    button.classList.remove('copied');
+                }, 2000);
+            });
+        }
+
+        // Show last update time (if available from GitHub)
+        fetch('https://api.github.com/repos/YOUR-USERNAME/feed-manager/commits?path=docs&per_page=1')
+            .then(res => res.json())
+            .then(data => {
+                if (data[0]) {
+                    const date = new Date(data[0].commit.author.date);
+                    document.getElementById('updateTime').textContent =
+                        `Last updated: ${date.toLocaleString()}`;
+                }
+            })
+            .catch(() => {}); // Silently fail if API is unavailable
+    </script>
+</body>
+</html>
