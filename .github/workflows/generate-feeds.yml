@@ -45,7 +45,8 @@ jobs:
         run: |
           python generate_feeds.py
         env:
-          # Shopify credentials are read from config.yaml
+          # Shopify access tokens from GitHub Secrets
+          SHOPIFY_TOKEN_FR: ${{ secrets.SHOPIFY_TOKEN_FR }}
           PYTHONUNBUFFERED: 1
 
       - name: Commit and push feeds to docs/

@@ -1,0 +1,32 @@
+# Secrets and local config
+config.local.yaml
+*.local.yaml
+.env
+.env.local
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+venv/
+env/
+ENV/
+
+# Generated feeds (don't commit feeds/, only docs/)
+feeds/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log

@@ -6,8 +6,23 @@ from xml.etree.ElementTree import Element, SubElement, tostring, ElementTree
 
 # Load config
 def load_config(path='config.yaml'):
+    """Load config with environment variable substitution."""
+    # Try local config first (for development)
+    if os.path.exists('config.local.yaml'):
+        path = 'config.local.yaml'
+
     with open(path, 'r') as f:
-        return yaml.safe_load(f)
+        config_text = f.read()
+
+    # Replace ${VAR} with environment variables
+    import re
+    def replace_env_var(match):
+        var_name = match.group(1)
+        return os.environ.get(var_name, match.group(0))
+
+    config_text = re.sub(r'\$\{([^}]+)\}', replace_env_var, config_text)
+
+    return yaml.safe_load(config_text)
 
 def fetch_products(store):
     """Fetch all products from Shopify Admin API for a given store config, with correct pagination."""
