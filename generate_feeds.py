@@ -129,12 +129,13 @@ def extract_field_value(product, variant, field_spec, store):
     - Direct fields: 'title', 'vendor'
     - Nested fields: 'images[0].src'
     - Variant fields: 'variant.price', 'variant.sku'
-    - URL templates: 'https://{shop_domain}/products/{handle}?variant={variant.id}'
+    - URL templates: 'https://{customer_domain}/products/{handle}?variant={variant.id}'
     - Conditional expressions: 'variant.inventory_quantity > 0 ? "in stock" : "out of stock"'
     """
     # Build context with all available fields
     context = {
-        'shop_domain': store['shop_domain'],
+        'shop_domain': store.get('customer_domain', store['shop_domain']),  # Use customer_domain for URLs
+        'customer_domain': store.get('customer_domain', store['shop_domain']),
         'language': store['language'],
         'currency': store['currency']
     }
