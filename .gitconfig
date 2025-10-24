@@ -1,0 +1,1 @@
+git config --global alias.pushb '!f() { git checkout -b "$1" && git add -A && git commit -m "$2" && git push -u origin "$1"; }; f'
