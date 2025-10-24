@@ -230,6 +230,13 @@ def products_to_channel_xml(products, store, channel, mapping):
                         value = variant_options['size']
                     elif xml_field == 'color' and 'color' in variant_options:
                         value = variant_options['color']
+                    elif xml_field == 'sale_price':
+                        # Only include sale_price if compare_at_price exists
+                        compare_at = variant.get('compare_at_price')
+                        if compare_at:
+                            value = extract_field_value(product, variant, field_spec, store)
+                        else:
+                            value = ''  # Leave empty if no sale price
                     else:
                         value = extract_field_value(product, variant, field_spec, store)
 
