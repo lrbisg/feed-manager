@@ -6,7 +6,7 @@
 stores:
   - name: FR
     shop_domain: bisgaardshoes-fr.myshopify.com  # Shopify Admin API domain
-    customer_domain: bisgaard.fr                  # Customer-facing domain for feed URLs
+    customer_domain: bisgaardshoes.fr                  # Customer-facing domain for feed URLs
     access_token: ${SHOPIFY_TOKEN_FR}
     language: fr
     currency: EUR
