@@ -5,7 +5,7 @@ channels:
       - item_group_id: id
       - title: title
       - description: body_html
-      - link: "https://{shop_domain}/products/{handle}?variant={variant.id}"
+      - link: "https://{customer_domain}/products/{handle}?variant={variant.id}"
       - image_link: images[0].src
       - availability: availability
       - price: "{variant.price} {currency}"
@@ -28,7 +28,7 @@ channels:
       - item_group_id: id
       - title: title
       - description: body_html
-      - link: "https://{shop_domain}/products/{handle}?variant={variant.id}"
+      - link: "https://{customer_domain}/products/{handle}?variant={variant.id}"
       - image_url: images[0].src
       - availability: availability
       - price: "{variant.price} {currency}"
