@@ -5,7 +5,7 @@
 
 stores:
   - name: FR
-    shop_domain: bisgaardshoes-fr.myshopify.com
+    shop_domain: bisgaardshoes.fr
     access_token: ${SHOPIFY_TOKEN_FR}
     language: fr
     currency: EUR
