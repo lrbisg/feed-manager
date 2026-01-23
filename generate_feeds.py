@@ -317,9 +317,28 @@ def products_to_channel_xml(products, store, channel, mapping):
 
     return root
 
+def indent_xml(elem, level=0):
+    """Add pretty-print indentation to XML elements."""
+    indent = "\n" + "  " * level
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = indent + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = indent
+        for child in elem:
+            indent_xml(child, level + 1)
+        if not child.tail or not child.tail.strip():
+            child.tail = indent
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = indent
+
 def save_xml(root, path):
     """Save XML file with optional compression."""
     import gzip
+
+    # Pretty-print XML with one field per line
+    indent_xml(root)
 
     tree = ElementTree(root)
 
