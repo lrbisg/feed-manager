@@ -28,3 +28,8 @@ stores:
     customer_domain: bisgaardshoes.dk
     language: da
     currency: DKK
+  - name: DE
+    shop_domain: bisgaardshoes-de.myshopify.com
+    customer_domain: bisgaardshoes.de
+    language: de
+    currency: EUR
