@@ -24,12 +24,33 @@ def load_config(path='config.yaml'):
 
     return yaml.safe_load(config_text)
 
-def fetch_products(store):
+def get_access_token(store):
+    """
+    Get access token using OAuth 2.0 client credentials grant.
+    Tokens are valid for 24 hours.
+    """
+    token_url = f"https://{store['shop_domain']}/admin/oauth/access_token"
+
+    response = requests.post(
+        token_url,
+        data={
+            'grant_type': 'client_credentials',
+            'client_id': store['client_id'],
+            'client_secret': store['client_secret']
+        },
+        headers={'Content-Type': 'application/x-www-form-urlencoded'}
+    )
+    response.raise_for_status()
+
+    token_data = response.json()
+    return token_data['access_token']
+
+def fetch_products(store, access_token):
     """Fetch all products from Shopify Admin API for a given store config, with correct pagination."""
     all_products = []
     base_url = f"https://{store['shop_domain']}/admin/api/2025-10/products.json?limit=250&status=active"
     headers = {
-        "X-Shopify-Access-Token": store['access_token']
+        "X-Shopify-Access-Token": access_token
     }
     next_url = base_url
     while next_url:
@@ -314,8 +335,12 @@ def main():
         store_folder = os.path.join('feeds', store['name'])
         os.makedirs(store_folder, exist_ok=True)
 
-        print(f"\n📦 Fetching products for {store['name']}...")
-        products = fetch_products(store)
+        print(f"\n🔑 Getting access token for {store['name']}...")
+        access_token = get_access_token(store)
+        print(f"✓ Token obtained (valid for 24 hours)")
+
+        print(f"📦 Fetching products for {store['name']}...")
+        products = fetch_products(store, access_token)
         print(f"✓ Found {len(products)} products")
 
         for channel, mapping in channel_mappings['channels'].items():

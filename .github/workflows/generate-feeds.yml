@@ -45,9 +45,11 @@ jobs:
         run: |
           python generate_feeds.py
         env:
-          # Shopify access tokens from GitHub Secrets
-          SHOPIFY_TOKEN_FR: ${{ secrets.SHOPIFY_TOKEN_FR }}
-          SHOPIFY_TOKEN_EN: ${{ secrets.SHOPIFY_TOKEN_EN }}
+          # Shopify OAuth credentials from GitHub Secrets
+          SHOPIFY_CLIENT_ID_FR: ${{ secrets.SHOPIFY_CLIENT_ID_FR }}
+          SHOPIFY_CLIENT_SECRET_FR: ${{ secrets.SHOPIFY_CLIENT_SECRET_FR }}
+          SHOPIFY_CLIENT_ID_EN: ${{ secrets.SHOPIFY_CLIENT_ID_EN }}
+          SHOPIFY_CLIENT_SECRET_EN: ${{ secrets.SHOPIFY_CLIENT_SECRET_EN }}
           PYTHONUNBUFFERED: 1
 
       - name: Commit and push feeds to docs/

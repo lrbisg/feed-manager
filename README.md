@@ -5,7 +5,7 @@ Automated product feed generator for Shopify stores that creates variant-level X
 ## Features
 
 ✅ **Variant-Level Inventory** - Each product variant (size/color) is a separate feed entry with accurate stock status
-✅ **Automatic Uploads** - Feeds are uploaded directly to Shopify Files CDN
+✅ **Free Hosting** - Feeds hosted on GitHub Pages at no cost
 ✅ **Multi-Channel Support** - Google Shopping and Meta feeds out of the box
 ✅ **Automated Scheduling** - GitHub Actions workflow runs every 6 hours
 ✅ **Configurable Mappings** - Easy YAML configuration for field mappings
@@ -37,18 +37,23 @@ Edit `config.yaml`:
 stores:
   - name: FR
     shop_domain: your-store.myshopify.com
-    access_token: shpat_your_access_token_here
+    customer_domain: your-store.com
+    client_id: ${SHOPIFY_CLIENT_ID_FR}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_FR}
     language: fr
     currency: EUR
 ```
 
-**Get Shopify Access Token:**
-1. Go to Shopify Admin → Settings → Apps and sales channels
-2. Click "Develop apps" → "Create an app"
-3. Configure Admin API scopes:
-   - `read_products`
-   - `write_files` (for uploading feeds)
-4. Install app and copy the Admin API access token
+**Get Shopify OAuth Credentials:**
+1. Go to [Shopify Partners](https://partners.shopify.com) and log in (or create an account)
+2. Click "Apps" → "Create app"
+3. Choose "Create app manually" and give it a name (e.g., "Feed Generator")
+4. In your app settings, go to "Configuration" → "Admin API access scopes"
+5. Enable `read_products` scope and save
+6. Copy the **Client ID** and **Client secret** from "Client credentials"
+7. Install the app on your store
+
+> ⚠️ **Note**: As of January 2026, Shopify uses OAuth client credentials instead of permanent tokens. The feed generator automatically obtains short-lived access tokens (valid 24 hours) using your client credentials.
 
 ### 3. Customize Channel Mappings (Optional)
 
@@ -77,19 +82,17 @@ channels:
 ### Generate Feeds Locally
 
 ```bash
-# Generate feeds only (saves to feeds/ directory)
 python generate_feeds.py
-
-# Generate AND upload to Shopify Files
-python generate_feeds.py --upload
 ```
+
+Feeds are saved to `feeds/` and `docs/` (for GitHub Pages).
 
 ### Automated Scheduling with GitHub Actions
 
 The included workflow (`.github/workflows/generate-feeds.yml`) automatically:
 - Runs every 6 hours
 - Generates fresh feeds
-- Uploads to Shopify Files
+- Commits to `docs/` for GitHub Pages hosting
 - Archives feed copies as artifacts
 
 **To enable:**
@@ -158,16 +161,22 @@ Edit `config.yaml` to add additional stores:
 stores:
   - name: FR
     shop_domain: store-fr.myshopify.com
-    access_token: shpat_token_fr
+    customer_domain: store-fr.com
+    client_id: ${SHOPIFY_CLIENT_ID_FR}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_FR}
     language: fr
     currency: EUR
 
   - name: DE
     shop_domain: store-de.myshopify.com
-    access_token: shpat_token_de
+    customer_domain: store-de.com
+    client_id: ${SHOPIFY_CLIENT_ID_DE}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_DE}
     language: de
     currency: EUR
 ```
+
+Remember to add the corresponding GitHub Secrets for each store's credentials.
 
 Feeds will be generated for each store automatically.
 
@@ -175,26 +184,25 @@ Feeds will be generated for each store automatically.
 
 ### Google Merchant Center
 
-1. Run `python generate_feeds.py --upload`
-2. Copy the feed URL from output (e.g., `https://cdn.shopify.com/s/files/.../google_fr_EUR.xml`)
-3. In Merchant Center → Products → Feeds → Add feed
-4. Choose "Scheduled fetch" and paste the URL
-5. Set fetch schedule (daily recommended)
+1. Get your GitHub Pages feed URL (e.g., `https://username.github.io/repo/EN_google_en_EUR.xml.gz`)
+2. In Merchant Center → Products → Feeds → Add feed
+3. Choose "Scheduled fetch" and paste the URL
+4. Set fetch schedule (daily recommended)
 
 ### Meta Commerce Manager
 
-1. Same process as Google - upload and copy URL
+1. Get your GitHub Pages feed URL (e.g., `https://username.github.io/repo/EN_meta_en_EUR.xml.gz`)
 2. In Commerce Manager → Catalog → Data Sources
 3. Add data feed with the Meta feed URL
 4. Set update frequency
 
 ## Troubleshooting
 
-### Feeds not uploading
+### Feeds not generating
 
-- Check Shopify access token has `write_files` scope
+- Check Shopify access token has `read_products` scope
 - Verify API version is 2025-10 or later
-- Check rate limits (script waits 0.6s between uploads)
+- Check your token hasn't expired
 
 ### Missing product fields
 
@@ -249,7 +257,7 @@ return [p for p in all_products if 'sale' in p.get('tags', '').lower()]
 
 Replacing DataFeedWatch (~€79/month) + Confect.io (~€29/month):
 - **Annual savings**: ~€1,296
-- **This solution**: Free (using Shopify's included API/CDN)
+- **This solution**: Free (using GitHub Pages for hosting)
 
 ## Support
 

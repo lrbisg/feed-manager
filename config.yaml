@@ -1,19 +1,23 @@
 # Shopify store feed configuration
-# IMPORTANT: Don't commit access tokens to git!
-# Use environment variables: ${SHOPIFY_TOKEN_FR}
-# Or set them as GitHub Secrets for Actions
+# IMPORTANT: Don't commit credentials to git!
+# Use environment variables or GitHub Secrets for Actions
+#
+# As of January 2026, Shopify requires OAuth client credentials.
+# Get these from your app in the Shopify Partners dashboard.
 
 stores:
   - name: FR
     shop_domain: bisgaardshoes-fr.myshopify.com  # Shopify Admin API domain
-    customer_domain: bisgaardshoes.fr                  # Customer-facing domain for feed URLs
-    access_token: ${SHOPIFY_TOKEN_FR}
+    customer_domain: bisgaardshoes.fr            # Customer-facing domain for feed URLs
+    client_id: ${SHOPIFY_CLIENT_ID_FR}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_FR}
     language: fr
     currency: EUR
   - name: EN
     shop_domain: bisgaardshoes-en.myshopify.com  # Shopify Admin API domain
-    customer_domain: bisgaardshoes.com                 # Customer-facing domain for feed URLs
-    access_token: ${SHOPIFY_TOKEN_EN}
+    customer_domain: bisgaardshoes.com           # Customer-facing domain for feed URLs
+    client_id: ${SHOPIFY_CLIENT_ID_EN}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_EN}
     language: en
     currency: EUR
 # Add more stores as needed

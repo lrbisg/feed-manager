@@ -1,32 +1,32 @@
 # GitHub Secrets Setup
 
-## 🔐 Security Fix Applied
+## 🔐 Security Setup
 
-Your Shopify access tokens are now protected and won't be committed to GitHub.
+Your Shopify OAuth credentials are protected and won't be committed to GitHub.
 
 ## How It Works
 
 ### Local Development
 - Uses `config.local.yaml` (which is in `.gitignore`)
-- This file contains your actual tokens
+- This file contains your actual client ID and secret
 - **Never gets committed to Git**
 
 ### GitHub Actions (Production)
-- Uses `config.yaml` with environment variable placeholders: `${SHOPIFY_TOKEN_FR}`
-- Reads tokens from GitHub Secrets
+- Uses `config.yaml` with environment variable placeholders: `${SHOPIFY_CLIENT_ID_FR}`
+- Reads credentials from GitHub Secrets
 - Secrets are encrypted and never exposed in logs
 
 ## 🚀 Setup Instructions
 
-### Step 1: Add GitHub Secret
+### Step 1: Add GitHub Secrets
 
 1. Go to your GitHub repository
 2. Click **Settings** → **Secrets and variables** → **Actions**
 3. Click **New repository secret**
-4. Add your secret:
-   - **Name**: `SHOPIFY_TOKEN_FR`
-   - **Value**: `xxx`
-5. Click **Add secret**
+4. Add your secrets (for each store):
+   - **Name**: `SHOPIFY_CLIENT_ID_FR` / **Value**: Your client ID
+   - **Name**: `SHOPIFY_CLIENT_SECRET_FR` / **Value**: Your client secret
+5. Click **Add secret** for each
 
 ### Step 2: Push to GitHub
 
@@ -45,10 +45,10 @@ GitHub's push protection will no longer block you because `config.yaml` only con
 ```
 Feed Manager/
 ├── config.yaml              # Safe to commit (uses ${VARIABLES})
-├── config.local.yaml        # NEVER committed (has real tokens)
+├── config.local.yaml        # NEVER committed (has real credentials)
 ├── .gitignore               # Ignores config.local.yaml
 └── .github/workflows/
-    └── generate-feeds.yml   # Uses secrets.SHOPIFY_TOKEN_FR
+    └── generate-feeds.yml   # Uses secrets.SHOPIFY_CLIENT_ID_FR etc.
 ```
 
 ## 🧪 Testing
@@ -62,11 +62,12 @@ python generate_feeds.py
 ### Testing with Environment Variables
 ```bash
 # Simulates GitHub Actions environment
-export SHOPIFY_TOKEN_FR="xxx"
+export SHOPIFY_CLIENT_ID_FR="your_client_id"
+export SHOPIFY_CLIENT_SECRET_FR="your_client_secret"
 mv config.local.yaml config.local.yaml.bak  # Temporarily hide local config
 python generate_feeds.py
 mv config.local.yaml.bak config.local.yaml  # Restore
-unset SHOPIFY_TOKEN_FR
+unset SHOPIFY_CLIENT_ID_FR SHOPIFY_CLIENT_SECRET_FR
 ```
 
 ## 🔄 Adding More Stores
@@ -76,13 +77,17 @@ unset SHOPIFY_TOKEN_FR
 stores:
   - name: FR
     shop_domain: bisgaardshoes-fr.myshopify.com
-    access_token: ${SHOPIFY_TOKEN_FR}
+    customer_domain: bisgaardshoes.fr
+    client_id: ${SHOPIFY_CLIENT_ID_FR}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_FR}
     language: fr
     currency: EUR
 
   - name: DE
     shop_domain: bisgaardshoes-de.myshopify.com
-    access_token: ${SHOPIFY_TOKEN_DE}
+    customer_domain: bisgaardshoes.de
+    client_id: ${SHOPIFY_CLIENT_ID_DE}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_DE}
     language: de
     currency: EUR
 ```
@@ -92,26 +97,32 @@ stores:
 stores:
   - name: FR
     shop_domain: bisgaardshoes-fr.myshopify.com
-    access_token: shpat_YOUR_FR_TOKEN
+    customer_domain: bisgaardshoes.fr
+    client_id: YOUR_FR_CLIENT_ID
+    client_secret: YOUR_FR_CLIENT_SECRET
     language: fr
     currency: EUR
 
   - name: DE
     shop_domain: bisgaardshoes-de.myshopify.com
-    access_token: shpat_YOUR_DE_TOKEN
+    customer_domain: bisgaardshoes.de
+    client_id: YOUR_DE_CLIENT_ID
+    client_secret: YOUR_DE_CLIENT_SECRET
     language: de
     currency: EUR
 ```
 
-### 3. Add GitHub Secret
-- Name: `SHOPIFY_TOKEN_DE`
-- Value: Your DE store token
+### 3. Add GitHub Secrets
+- `SHOPIFY_CLIENT_ID_DE`: Your DE store client ID
+- `SHOPIFY_CLIENT_SECRET_DE`: Your DE store client secret
 
 ### 4. Update GitHub Actions workflow
 ```yaml
 env:
-  SHOPIFY_TOKEN_FR: ${{ secrets.SHOPIFY_TOKEN_FR }}
-  SHOPIFY_TOKEN_DE: ${{ secrets.SHOPIFY_TOKEN_DE }}
+  SHOPIFY_CLIENT_ID_FR: ${{ secrets.SHOPIFY_CLIENT_ID_FR }}
+  SHOPIFY_CLIENT_SECRET_FR: ${{ secrets.SHOPIFY_CLIENT_SECRET_FR }}
+  SHOPIFY_CLIENT_ID_DE: ${{ secrets.SHOPIFY_CLIENT_ID_DE }}
+  SHOPIFY_CLIENT_SECRET_DE: ${{ secrets.SHOPIFY_CLIENT_SECRET_DE }}
 ```
 
 ## ✅ Verification
@@ -120,28 +131,28 @@ Check that secrets are working:
 
 1. **Local**: Run `python generate_feeds.py` - should work using `config.local.yaml`
 2. **GitHub**: Push code and check Actions tab - workflow should succeed
-3. **Logs**: GitHub Action logs will show `***` instead of actual tokens
+3. **Logs**: GitHub Action logs will show `***` instead of actual credentials
 
 ## 🚨 Important Notes
 
 - **NEVER** commit `config.local.yaml`
-- **NEVER** put real tokens in `config.yaml`
+- **NEVER** put real credentials in `config.yaml`
 - **ALWAYS** use `${VARIABLE}` syntax in `config.yaml`
 - **DO** add new secrets in GitHub Settings before using them in workflows
 
 ## 🔒 Security Best Practices
 
-✅ Tokens in GitHub Secrets (encrypted)
-✅ Local tokens in .gitignore'd file
+✅ Credentials in GitHub Secrets (encrypted)
+✅ Local credentials in .gitignore'd file
 ✅ Placeholders in committed config
-✅ No tokens in logs or history
+✅ No credentials in logs or history
+✅ Short-lived tokens (24h) via OAuth client credentials
 
-## 🆘 If You Already Committed a Token
+## 🆘 If You Already Committed Credentials
 
-1. **Revoke the token immediately**:
-   - Go to Shopify Admin → Settings → Apps and sales channels
-   - Find your app → Revoke access token
-   - Generate a new token
+1. **Regenerate credentials immediately**:
+   - Go to [Shopify Partners](https://partners.shopify.com) → Apps
+   - Find your app → API access → Regenerate client secret
 
 2. **Update everywhere**:
    - `config.local.yaml` (local)
