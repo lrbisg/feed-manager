@@ -73,6 +73,22 @@ def load_channel_mappings(path='channel_mappings.yaml'):
     with open(path, 'r') as f:
         return yaml.safe_load(f)
 
+def strip_html(html_text):
+    """Remove HTML tags and clean up text for feed descriptions."""
+    if not html_text:
+        return ''
+    # Remove HTML tags
+    text = re.sub(r'<[^>]+>', ' ', html_text)
+    # Decode common HTML entities
+    text = text.replace('&nbsp;', ' ')
+    text = text.replace('&amp;', '&')
+    text = text.replace('&lt;', '<')
+    text = text.replace('&gt;', '>')
+    text = text.replace('&quot;', '"')
+    # Clean up whitespace
+    text = re.sub(r'\s+', ' ', text).strip()
+    return text
+
 def get_nested_value(obj, path):
     """
     Extract nested values from dict using path notation.
@@ -248,17 +264,42 @@ def products_to_channel_xml(products, store, channel, mapping):
                     # Handle special fields
                     if xml_field == 'availability':
                         value = calculate_availability(variant)
+                    elif xml_field == 'description':
+                        # Strip HTML from description
+                        raw_value = extract_field_value(product, variant, field_spec, store)
+                        value = strip_html(raw_value)
                     elif xml_field == 'size' and 'size' in variant_options:
                         value = variant_options['size']
                     elif xml_field == 'color' and 'color' in variant_options:
                         value = variant_options['color']
+                    elif xml_field == 'price':
+                        # Price should be original price (compare_at_price if on sale, otherwise regular price)
+                        compare_at = variant.get('compare_at_price')
+                        current_price = variant.get('price', '')
+                        if compare_at:
+                            value = f"{compare_at} {store['currency']}"
+                        else:
+                            value = f"{current_price} {store['currency']}"
                     elif xml_field == 'sale_price':
-                        # Only include sale_price if compare_at_price exists
+                        # Sale price is the discounted price (only when compare_at_price exists)
                         compare_at = variant.get('compare_at_price')
                         if compare_at:
-                            value = extract_field_value(product, variant, field_spec, store)
+                            current_price = variant.get('price', '')
+                            value = f"{current_price} {store['currency']}"
                         else:
-                            value = ''  # Leave empty if no sale price
+                            value = ''  # No sale price if not on sale
+                    elif xml_field == 'additional_image_link' and field_spec == 'additional_images':
+                        # Add multiple additional_image_link elements for images 2, 3, etc.
+                        images = product.get('images', [])
+                        for img in images[1:4]:  # Images 2, 3, 4 (index 1, 2, 3)
+                            img_url = img.get('src', '')
+                            if img_url:
+                                if channel == 'google':
+                                    img_elem = SubElement(item, 'g:additional_image_link')
+                                else:
+                                    img_elem = SubElement(item, 'additional_image_link')
+                                img_elem.text = img_url
+                        continue  # Skip normal element creation
                     else:
                         value = extract_field_value(product, variant, field_spec, store)
 
