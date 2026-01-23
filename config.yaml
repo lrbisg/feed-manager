@@ -8,25 +8,23 @@
 # GitHub Pages base URL for feed hosting
 github_pages_url: https://bisgaardshoes.github.io/feed-manager
 
+# Shopify app credentials (shared across all stores)
+client_id: ${SHOPIFY_CLIENT_ID}
+client_secret: ${SHOPIFY_CLIENT_SECRET}
+
 stores:
   - name: FR
-    shop_domain: bisgaardshoes-fr.myshopify.com  # Shopify Admin API domain
-    customer_domain: bisgaardshoes.fr            # Customer-facing domain for feed URLs
-    client_id: ${SHOPIFY_CLIENT_ID_FR}
-    client_secret: ${SHOPIFY_CLIENT_SECRET_FR}
+    shop_domain: bisgaardshoes-fr.myshopify.com
+    customer_domain: bisgaardshoes.fr
     language: fr
     currency: EUR
   - name: EN
-    shop_domain: bisgaardshoes-en.myshopify.com  # Shopify Admin API domain
-    customer_domain: bisgaardshoes.com           # Customer-facing domain for feed URLs
-    client_id: ${SHOPIFY_CLIENT_ID_EN}
-    client_secret: ${SHOPIFY_CLIENT_SECRET_EN}
+    shop_domain: bisgaardshoes-en.myshopify.com
+    customer_domain: bisgaardshoes.com
     language: en
     currency: EUR
   - name: DK
-    shop_domain: bisgaardshoes-dk.myshopify.com  # Shopify Admin API domain
-    customer_domain: bisgaardshoes.dk           # Customer-facing domain for feed URLs
-    client_id: ${SHOPIFY_CLIENT_ID_DK}
-    client_secret: ${SHOPIFY_CLIENT_SECRET_DK}
+    shop_domain: bisgaardshoes-dk.myshopify.com
+    customer_domain: bisgaardshoes.dk
     language: da
     currency: DKK

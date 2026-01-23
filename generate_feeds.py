@@ -24,7 +24,7 @@ def load_config(path='config.yaml'):
 
     return yaml.safe_load(config_text)
 
-def get_access_token(store):
+def get_access_token(store, config):
     """
     Get access token using OAuth 2.0 client credentials grant.
     Tokens are valid for 24 hours.
@@ -35,8 +35,8 @@ def get_access_token(store):
         token_url,
         data={
             'grant_type': 'client_credentials',
-            'client_id': store['client_id'],
-            'client_secret': store['client_secret']
+            'client_id': config['client_id'],
+            'client_secret': config['client_secret']
         },
         headers={'Content-Type': 'application/x-www-form-urlencoded'}
     )
@@ -336,7 +336,7 @@ def main():
         os.makedirs(store_folder, exist_ok=True)
 
         print(f"\n🔑 Getting access token for {store['name']}...")
-        access_token = get_access_token(store)
+        access_token = get_access_token(store, config)
         print(f"✓ Token obtained (valid for 24 hours)")
 
         print(f"📦 Fetching products for {store['name']}...")
