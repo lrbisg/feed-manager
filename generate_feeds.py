@@ -302,13 +302,6 @@ def copy_feeds_to_docs():
     return copied_files
 
 def main():
-    import argparse
-    from shopify_uploader import upload_to_shopify
-
-    parser = argparse.ArgumentParser(description='Generate Shopify product feeds')
-    parser.add_argument('--upload', action='store_true', help='Upload feeds to Shopify after generation')
-    args = parser.parse_args()
-
     config = load_config()
     channel_mappings = load_channel_mappings()
     os.makedirs('feeds', exist_ok=True)
@@ -341,10 +334,6 @@ def main():
 
     # Copy feeds to docs/ for GitHub Pages
     copied_files = copy_feeds_to_docs()
-
-    # Upload to Shopify if requested
-    if args.upload:
-        upload_to_shopify(config)
 
     # Show GitHub Pages URLs
     if copied_files:

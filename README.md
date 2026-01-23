@@ -138,7 +138,6 @@ def calculate_availability(variant):
 ```
 Feed Manager/
 ├── generate_feeds.py          # Main feed generator
-├── shopify_uploader.py        # Shopify Files upload module
 ├── config.yaml                # Store credentials & settings
 ├── channel_mappings.yaml      # Field mapping configuration
 ├── requirements.txt           # Python dependencies
