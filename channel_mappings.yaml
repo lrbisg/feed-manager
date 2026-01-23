@@ -32,7 +32,7 @@ channels:
       - image_url: images[0].src
       - availability: availability
       - price: "{variant.price} {currency}"
-      - brand: vendor
+      - brand: 'bisgaard'
       - condition: 'new'
       - color: color
       - size: size
