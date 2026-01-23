@@ -29,7 +29,7 @@ channels:
       - title: title
       - description: body_html
       - link: "https://{customer_domain}/products/{handle}?variant={variant.id}"
-      - image_url: images[0].src
+      - image_link: images[0].src
       - availability: availability
       - price: "{variant.price} {currency}"
       - brand: 'bisgaard'
