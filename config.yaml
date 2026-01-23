@@ -20,4 +20,10 @@ stores:
     client_secret: ${SHOPIFY_CLIENT_SECRET_EN}
     language: en
     currency: EUR
-# Add more stores as needed
+  - name: DK
+    shop_domain: bisgaardshoes-dk.myshopify.com  # Shopify Admin API domain
+    customer_domain: bisgaardshoes.dk           # Customer-facing domain for feed URLs
+    client_id: ${SHOPIFY_CLIENT_ID_DK}
+    client_secret: ${SHOPIFY_CLIENT_SECRET_DK}
+    language: da
+    currency: DKK
