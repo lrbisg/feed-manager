@@ -5,6 +5,9 @@
 # As of January 2026, Shopify requires OAuth client credentials.
 # Get these from your app in the Shopify Partners dashboard.
 
+# GitHub Pages base URL for feed hosting
+github_pages_url: https://bisgaardshoes.github.io/feed-manager
+
 stores:
   - name: FR
     shop_domain: bisgaardshoes-fr.myshopify.com  # Shopify Admin API domain

@@ -187,38 +187,36 @@
             </div>
 
             <div class="info-box">
-                <h3>ℹ️ Using These Feeds</h3>
-                <p><strong>Google Merchant Center:</strong></p>
+                <h3>ℹ️ Usage</h3>
+                <p>Copy the feed URL and paste it into your ad platform:</p>
                 <ul>
-                    <li>Go to Products → Feeds → Add Feed</li>
-                    <li>Select "Scheduled fetch"</li>
-                    <li>Paste the Google feed URL above</li>
-                    <li>Set schedule to every 12-24 hours</li>
+                    <li><strong>Google Merchant Center:</strong> Products → Feeds → Scheduled fetch</li>
+                    <li><strong>Meta Commerce Manager:</strong> Catalog → Data Sources → Add Feed</li>
                 </ul>
-                <p style="margin-top: 1rem;"><strong>Meta Commerce Manager:</strong></p>
-                <ul>
-                    <li>Go to Catalog → Data Sources → Add Feed</li>
-                    <li>Choose "Set a schedule"</li>
-                    <li>Paste the Meta feed URL above</li>
-                    <li>Set update frequency to daily</li>
-                </ul>
-                <p style="margin-top: 1rem;"><strong>Note:</strong> Feeds are compressed (.gz) but Google and Meta will automatically decompress them.</p>
+                <p style="margin-top: 1rem;">Feeds are compressed (.gz) - platforms decompress automatically.</p>
             </div>
         </div>
 
-        <div class="update-time" id="updateTime">
+        <div class="update-time">
             Feeds updated automatically every 6 hours
         </div>
     </div>
 
     <script>
-        // Auto-detect feeds in the same directory
         const baseUrl = window.location.origin + window.location.pathname.replace('/index.html', '').replace(/\/$/, '');
 
-        const feeds = [
-            { name: 'FR - Google Shopping', file: 'FR_google_fr_EUR.xml.gz', channel: 'Google' },
-            { name: 'FR - Meta (Facebook)', file: 'FR_meta_fr_EUR.xml.gz', channel: 'Meta' }
+        // Store configurations - add new stores here
+        const stores = [
+            { code: 'EN', lang: 'en', currency: 'EUR', name: 'English' },
+            { code: 'FR', lang: 'fr', currency: 'EUR', name: 'France' },
+            { code: 'DK', lang: 'da', currency: 'DKK', name: 'Denmark' },
+            { code: 'DE', lang: 'de', currency: 'EUR', name: 'Germany' }
         ];
+
+        const feeds = stores.flatMap(store => [
+            { name: `${store.name} - Google Shopping`, file: `${store.code}_google_${store.lang}_${store.currency}.xml.gz` },
+            { name: `${store.name} - Meta (Facebook)`, file: `${store.code}_meta_${store.lang}_${store.currency}.xml.gz` }
+        ]);
 
         const feedList = document.getElementById('feedList');
 
@@ -239,7 +237,7 @@
 
         function copyToClipboard(text, button) {
             navigator.clipboard.writeText(text).then(() => {
-                button.textContent = '✓ Copied!';
+                button.textContent = 'Copied!';
                 button.classList.add('copied');
                 setTimeout(() => {
                     button.textContent = 'Copy';
@@ -247,18 +245,6 @@
                 }, 2000);
             });
         }
-
-        // Show last update time (if available from GitHub)
-        fetch('https://api.github.com/repos/YOUR-USERNAME/feed-manager/commits?path=docs&per_page=1')
-            .then(res => res.json())
-            .then(data => {
-                if (data[0]) {
-                    const date = new Date(data[0].commit.author.date);
-                    document.getElementById('updateTime').textContent =
-                        `Last updated: ${date.toLocaleString()}`;
-                }
-            })
-            .catch(() => {}); // Silently fail if API is unavailable
     </script>
 </body>
 </html>

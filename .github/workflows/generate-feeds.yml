@@ -50,6 +50,8 @@ jobs:
           SHOPIFY_CLIENT_SECRET_FR: ${{ secrets.SHOPIFY_CLIENT_SECRET_FR }}
           SHOPIFY_CLIENT_ID_EN: ${{ secrets.SHOPIFY_CLIENT_ID_EN }}
           SHOPIFY_CLIENT_SECRET_EN: ${{ secrets.SHOPIFY_CLIENT_SECRET_EN }}
+          SHOPIFY_CLIENT_ID_DK: ${{ secrets.SHOPIFY_CLIENT_ID_DK }}
+          SHOPIFY_CLIENT_SECRET_DK: ${{ secrets.SHOPIFY_CLIENT_SECRET_DK }}
           PYTHONUNBUFFERED: 1
 
       - name: Commit and push feeds to docs/

@@ -362,17 +362,12 @@ def main():
 
     # Show GitHub Pages URLs
     if copied_files:
+        base_url = config.get('github_pages_url', 'https://YOUR-USERNAME.github.io/REPO-NAME')
         print("\n" + "="*60)
         print("GitHub Pages Feed URLs:")
         print("="*60)
-        print("\nOnce you push to GitHub and enable Pages, your feeds will be at:")
-        repo_name = "feed-manager"  # Update this if your repo name is different
-        github_user = "YOUR-USERNAME"  # You'll need to update this
         for filename in copied_files:
-            print(f"  https://{github_user}.github.io/{repo_name}/{filename}")
-        print("\n💡 Remember to:")
-        print("  1. Push this code to GitHub")
-        print("  2. Go to Settings → Pages → Enable GitHub Pages from 'docs' folder")
+            print(f"  {base_url}/{filename}")
         print("="*60)
 
 if __name__ == "__main__":
