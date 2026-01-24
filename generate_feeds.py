@@ -31,12 +31,16 @@ def get_access_token(store, config):
     """
     token_url = f"https://{store['shop_domain']}/admin/oauth/access_token"
 
+    # Support both top-level and per-store credentials
+    client_id = config.get('client_id') or store.get('client_id')
+    client_secret = config.get('client_secret') or store.get('client_secret')
+
     response = requests.post(
         token_url,
         data={
             'grant_type': 'client_credentials',
-            'client_id': config['client_id'],
-            'client_secret': config['client_secret']
+            'client_id': client_id,
+            'client_secret': client_secret
         },
         headers={'Content-Type': 'application/x-www-form-urlencoded'}
     )
@@ -46,39 +50,121 @@ def get_access_token(store, config):
     return token_data['access_token']
 
 def fetch_products(store, access_token):
-    """Fetch all products from Shopify Admin API for a given store config, with correct pagination."""
+    """Fetch all products with metafields from Shopify GraphQL API."""
     all_products = []
-    base_url = f"https://{store['shop_domain']}/admin/api/2025-10/products.json?limit=250&status=active"
+    graphql_url = f"https://{store['shop_domain']}/admin/api/2025-10/graphql.json"
     headers = {
-        "X-Shopify-Access-Token": access_token
+        "X-Shopify-Access-Token": access_token,
+        "Content-Type": "application/json"
     }
-    next_url = base_url
-    while next_url:
-        response = requests.get(next_url, headers=headers)
-        response.raise_for_status()
-        products = response.json().get('products', [])
-        all_products.extend(products)
-        link = response.headers.get('Link')
-        next_url = None
-        if link and 'rel="next"' in link:
-            match = re.search(r'<([^>]+)>; rel="next"', link)
-            if match:
-                next_url = match.group(1)
 
-    # Fetch metafields for all products
-    print(f"  Fetching metafields...")
-    for product in all_products:
-        metafields_url = f"https://{store['shop_domain']}/admin/api/2025-10/products/{product['id']}/metafields.json"
-        response = requests.get(metafields_url, headers=headers)
-        if response.status_code == 200:
-            metafields = response.json().get('metafields', [])
-            # Convert to dict keyed by namespace.key for easy access
-            product['metafields'] = {
-                f"{mf['namespace']}.{mf['key']}": mf['value']
-                for mf in metafields
+    # GraphQL query to fetch products with metafields
+    query = """
+    query($cursor: String) {
+      products(first: 100, after: $cursor, query: "status:active") {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        nodes {
+          id
+          handle
+          title
+          descriptionHtml
+          vendor
+          productType
+          images(first: 10) {
+            nodes {
+              src: url
             }
-        else:
-            product['metafields'] = {}
+          }
+          variants(first: 100) {
+            nodes {
+              id
+              price
+              compareAtPrice
+              sku
+              barcode
+              inventoryQuantity
+              inventoryPolicy
+              selectedOptions {
+                name
+                value
+              }
+            }
+          }
+          metafields(first: 50, namespace: "custom") {
+            nodes {
+              namespace
+              key
+              value
+            }
+          }
+        }
+      }
+    }
+    """
+
+    cursor = None
+    while True:
+        response = requests.post(
+            graphql_url,
+            headers=headers,
+            json={"query": query, "variables": {"cursor": cursor}}
+        )
+        response.raise_for_status()
+        data = response.json()
+
+        if 'errors' in data:
+            raise Exception(f"GraphQL errors: {data['errors']}")
+
+        products_data = data['data']['products']
+
+        for node in products_data['nodes']:
+            # Convert GraphQL response to REST-like format for compatibility
+            product = {
+                'id': node['id'].split('/')[-1],  # Extract numeric ID
+                'handle': node['handle'],
+                'title': node['title'],
+                'body_html': node['descriptionHtml'],
+                'vendor': node['vendor'],
+                'product_type': node['productType'],
+                'images': [{'src': img['src']} for img in node['images']['nodes']],
+                'variants': [],
+                'metafields': {}
+            }
+
+            # Convert variants
+            for var in node['variants']['nodes']:
+                variant = {
+                    'id': var['id'].split('/')[-1],
+                    'price': var['price'],
+                    'compare_at_price': var['compareAtPrice'],
+                    'sku': var['sku'],
+                    'barcode': var['barcode'],
+                    'inventory_quantity': var['inventoryQuantity'],
+                    'inventory_policy': var['inventoryPolicy'].lower() if var['inventoryPolicy'] else 'deny'
+                }
+                # Add options (option1, option2, option3)
+                for i, opt in enumerate(var['selectedOptions']):
+                    variant[f'option{i+1}'] = opt['value']
+                product['variants'].append(variant)
+
+            # Convert metafields to dict
+            for mf in node['metafields']['nodes']:
+                product['metafields'][f"{mf['namespace']}.{mf['key']}"] = mf['value']
+
+            # Also need options metadata for get_variant_options
+            product['options'] = []
+            if node['variants']['nodes']:
+                for i, opt in enumerate(node['variants']['nodes'][0]['selectedOptions']):
+                    product['options'].append({'name': opt['name']})
+
+            all_products.append(product)
+
+        if not products_data['pageInfo']['hasNextPage']:
+            break
+        cursor = products_data['pageInfo']['endCursor']
 
     return all_products
 
@@ -319,9 +405,9 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
                         category_map = channel_mappings.get('product_type_categories', {})
                         value = category_map.get(product_type, category_map.get('default', ''))
                     elif xml_field == 'material':
-                        # Get material from metafield
+                        # Get material from metafield (prefer localized, fallback to global)
                         metafields = product.get('metafields', {})
-                        value = metafields.get('custom.lining_material_global', '')
+                        value = metafields.get('custom.lining_material') or metafields.get('custom.lining_material_global', '')
                     elif xml_field == 'product_highlight':
                         # Build highlights from boolean metafields
                         metafields = product.get('metafields', {})
