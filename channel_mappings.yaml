@@ -1,3 +1,13 @@
+# Map Shopify product_type to Google product category
+# See: https://support.google.com/merchants/answer/6324436
+product_type_categories:
+  rainwear: "Apparel & Accessories > Clothing > Outerwear > Rain Suits & Raincoats"
+  socks: "Apparel & Accessories > Clothing > Underwear & Socks > Socks"
+  measurement tools: "Business & Industrial > Retail > Foot Measuring Devices"
+  care products: "Apparel & Accessories > Shoe Accessories > Shoe Care & Tools"
+  # Default: everything else is children's shoes
+  default: "Apparel & Accessories > Shoes > Kids Shoes"
+
 channels:
   google:
     fields:
@@ -34,6 +44,7 @@ channels:
       - additional_image_link: additional_images
       - availability: availability
       - price: "{variant.price} {currency}"
+      - sale_price: "{variant.price} {currency}"
       - brand: vendor
       - condition: "'new'"
       - google_product_category: google_product_category

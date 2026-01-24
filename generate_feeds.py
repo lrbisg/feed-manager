@@ -238,7 +238,7 @@ def get_variant_options(product, variant):
             options[option_name] = option_value
     return options
 
-def products_to_channel_xml(products, store, channel, mapping):
+def products_to_channel_xml(products, store, channel, mapping, channel_mappings):
     """
     Generate XML feed with one entry per variant.
     Each variant becomes a separate item with proper item_group_id linking.
@@ -300,6 +300,11 @@ def products_to_channel_xml(products, store, channel, mapping):
                                     img_elem = SubElement(item, 'additional_image_link')
                                 img_elem.text = img_url
                         continue  # Skip normal element creation
+                    elif xml_field == 'google_product_category':
+                        # Look up category based on product_type
+                        product_type = product.get('product_type', '').lower()
+                        category_map = channel_mappings.get('product_type_categories', {})
+                        value = category_map.get(product_type, category_map.get('default', ''))
                     else:
                         value = extract_field_value(product, variant, field_spec, store)
 
@@ -405,7 +410,7 @@ def main():
 
         for channel, mapping in channel_mappings['channels'].items():
             print(f"  Generating {channel} feed...")
-            xml_root = products_to_channel_xml(products, store, channel, mapping)
+            xml_root = products_to_channel_xml(products, store, channel, mapping, channel_mappings)
             out_path = os.path.join(store_folder, f"{channel}_{store['language']}_{store['currency']}.xml")
             save_xml(xml_root, out_path)
 
