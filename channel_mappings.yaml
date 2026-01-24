@@ -21,7 +21,7 @@ channels:
       - availability: availability
       - price: "{variant.price} {currency}"
       - sale_price: "{variant.compare_at_price} {currency}"
-      - brand: vendor
+      - brand: "'bisgaard'"
       - gtin: variant.barcode
       - mpn: variant.sku
       - condition: "'new'"
@@ -47,7 +47,7 @@ channels:
       - availability: availability
       - price: "{variant.price} {currency}"
       - sale_price: "{variant.price} {currency}"
-      - brand: vendor
+      - brand: "'bisgaard'"
       - condition: "'new'"
       - google_product_category: google_product_category
       - color: color

@@ -367,10 +367,12 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
                         # Strip HTML from description
                         raw_value = extract_field_value(product, variant, field_spec, store)
                         value = strip_html(raw_value)
-                    elif xml_field == 'size' and 'size' in variant_options:
-                        value = variant_options['size']
-                    elif xml_field == 'color' and 'color' in variant_options:
-                        value = variant_options['color']
+                    elif xml_field == 'size':
+                        # Check for various size option names
+                        value = variant_options.get('size') or variant_options.get('sizes') or variant_options.get('størrelse') or ''
+                    elif xml_field == 'color':
+                        # Check for various color option names
+                        value = variant_options.get('color') or variant_options.get('colour') or variant_options.get('farve') or ''
                     elif xml_field == 'price':
                         # Price should be original price (compare_at_price if on sale, otherwise regular price)
                         compare_at = variant.get('compare_at_price')
