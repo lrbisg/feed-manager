@@ -31,8 +31,10 @@ channels:
       - size: size
       - age_group: "'kids'"
       - gender: "'unisex'"
-      - material: material
-      - pattern: pattern
+      - material: metafield
+      - product_highlight: metafield
+      - custom_label_0: metafield
+      - custom_label_1: product_type
   meta:
     fields:
       - id: variant.id
@@ -50,3 +52,7 @@ channels:
       - google_product_category: google_product_category
       - color: color
       - size: size
+      - material: metafield
+      - product_highlight: metafield
+      - custom_label_0: metafield
+      - custom_label_1: product_type

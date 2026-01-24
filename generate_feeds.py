@@ -65,8 +65,21 @@ def fetch_products(store, access_token):
             if match:
                 next_url = match.group(1)
 
-    # Optional: Apply filters here if needed
-    # Example: filtered = [p for p in all_products if some_condition]
+    # Fetch metafields for all products
+    print(f"  Fetching metafields...")
+    for product in all_products:
+        metafields_url = f"https://{store['shop_domain']}/admin/api/2025-10/products/{product['id']}/metafields.json"
+        response = requests.get(metafields_url, headers=headers)
+        if response.status_code == 200:
+            metafields = response.json().get('metafields', [])
+            # Convert to dict keyed by namespace.key for easy access
+            product['metafields'] = {
+                f"{mf['namespace']}.{mf['key']}": mf['value']
+                for mf in metafields
+            }
+        else:
+            product['metafields'] = {}
+
     return all_products
 
 def load_channel_mappings(path='channel_mappings.yaml'):
@@ -305,6 +318,47 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
                         product_type = product.get('product_type', '').lower()
                         category_map = channel_mappings.get('product_type_categories', {})
                         value = category_map.get(product_type, category_map.get('default', ''))
+                    elif xml_field == 'material':
+                        # Get material from metafield
+                        metafields = product.get('metafields', {})
+                        value = metafields.get('custom.lining_material_global', '')
+                    elif xml_field == 'product_highlight':
+                        # Build highlights from boolean metafields
+                        metafields = product.get('metafields', {})
+                        highlights = []
+                        if metafields.get('custom.water_resistant') == 'true' or metafields.get('custom.water_resistant') == True:
+                            highlights.append('Water resistant')
+                        if metafields.get('custom.removable_insole') == 'true' or metafields.get('custom.removable_insole') == True:
+                            highlights.append('Removable insole')
+                        if metafields.get('custom.tex_membrane') == 'true' or metafields.get('custom.tex_membrane') == True:
+                            highlights.append('TEX membrane')
+                        if metafields.get('custom.barefoot') == 'true' or metafields.get('custom.barefoot') == True:
+                            highlights.append('Barefoot friendly')
+                        # Add multiple product_highlight elements
+                        for highlight in highlights:
+                            if channel == 'google':
+                                hl_elem = SubElement(item, 'g:product_highlight')
+                            else:
+                                hl_elem = SubElement(item, 'product_highlight')
+                            hl_elem.text = highlight
+                        continue  # Skip normal element creation
+                    elif xml_field == 'custom_label_0':
+                        # Season from metafield
+                        metafields = product.get('metafields', {})
+                        seasons = metafields.get('custom.seasons', '')
+                        # Parse JSON array if needed
+                        if seasons.startswith('['):
+                            import json
+                            try:
+                                seasons_list = json.loads(seasons)
+                                value = seasons_list[0] if seasons_list else ''
+                            except:
+                                value = ''
+                        else:
+                            value = seasons
+                    elif xml_field == 'custom_label_1':
+                        # Product type from native Shopify field
+                        value = product.get('product_type', '')
                     else:
                         value = extract_field_value(product, variant, field_spec, store)
 
@@ -313,7 +367,10 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
                                                               'image_link', 'availability', 'price',
                                                               'brand', 'gtin', 'mpn', 'condition',
                                                               'item_group_id', 'color', 'size',
-                                                              'sale_price', 'additional_image_link']:
+                                                              'sale_price', 'additional_image_link',
+                                                              'material', 'product_highlight',
+                                                              'custom_label_0', 'custom_label_1',
+                                                              'google_product_category', 'age_group', 'gender']:
                         elem = SubElement(item, f'g:{xml_field}')
                     else:
                         elem = SubElement(item, xml_field)
