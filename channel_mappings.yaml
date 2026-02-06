@@ -37,6 +37,7 @@ channels:
           tex_membrane: "TEX membrane"
           barefoot: "Barefoot friendly"
       - custom_label_0: metafields.custom.seasons
+      - custom_label_1: collections
   meta:
     fields:
       - id: variant.id
@@ -62,3 +63,4 @@ channels:
           tex_membrane: "TEX membrane"
           barefoot: "Barefoot friendly"
       - custom_label_0: metafields.custom.seasons
+      - custom_label_1: collections

@@ -100,6 +100,11 @@ def fetch_products(store, access_token):
               value
             }
           }
+          collections(first: 20) {
+            nodes {
+              title
+            }
+          }
         }
       }
     }
@@ -153,6 +158,9 @@ def fetch_products(store, access_token):
             # Convert metafields to dict
             for mf in node['metafields']['nodes']:
                 product['metafields'][f"{mf['namespace']}.{mf['key']}"] = mf['value']
+
+            # Extract collection titles
+            product['collections'] = [col['title'] for col in node['collections']['nodes']]
 
             # Also need options metadata for get_variant_options
             product['options'] = []
@@ -398,6 +406,18 @@ def get_field_value(xml_field, field_spec, product, variant, variant_options, st
             except:
                 pass
         return value
+
+    # Handle collections syntax
+    if isinstance(field_spec, str) and field_spec.startswith('collections'):
+        collections = product.get('collections', [])
+        # collections[0], collections[1], etc.
+        if '[' in field_spec:
+            match = re.search(r'\[(\d+)\]', field_spec)
+            if match:
+                idx = int(match.group(1))
+                return collections[idx] if idx < len(collections) else ''
+        # Just "collections" - return comma-separated list
+        return ', '.join(collections)
 
     # Handle literal strings (no braces, no dots except in domains)
     if isinstance(field_spec, str) and not field_spec.startswith('{') and '.' not in field_spec and not field_spec.startswith('variant'):
