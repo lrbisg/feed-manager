@@ -26,7 +26,7 @@ channels:
       - condition: "new"
       - product_type: product_type
       - google_product_category: google_product_category
-      - color: color
+      - color: metafields.custom.color_name
       - size: size
       - age_group: "kids"
       - gender: "unisex"
@@ -54,13 +54,13 @@ channels:
       - condition: "new"
       - product_type: product_type
       - google_product_category: google_product_category
-      - color: color
+      - color: metafields.custom.color_name
       - size: size
       - material: metafields.custom.lining_material
       - product_highlight:
           water_resistant: "Water resistant"
           removable_insole: "Removable insole"
           tex_membrane: "TEX membrane"
-          barefoot: "Barefoot friendly"
+          barefoot: "Barefoot"
       - custom_label_0: metafields.custom.seasons
       - custom_label_1: collections

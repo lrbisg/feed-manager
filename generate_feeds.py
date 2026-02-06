@@ -370,6 +370,12 @@ def get_field_value(xml_field, field_spec, product, variant, variant_options, st
         return variant_options.get('size') or variant_options.get('sizes') or variant_options.get('størrelse') or ''
 
     if xml_field == 'color':
+        # If field_spec is a metafield, use that; otherwise fall back to variant options
+        if isinstance(field_spec, str) and field_spec.startswith('metafields.'):
+            metafield_path = field_spec.replace('metafields.', '')
+            value = metafields.get(metafield_path, '')
+            if value:
+                return value
         return variant_options.get('color') or variant_options.get('colour') or variant_options.get('farve') or ''
 
     if xml_field == 'price' or field_spec == 'price':
