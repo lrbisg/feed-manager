@@ -337,6 +337,80 @@ def get_variant_options(product, variant):
             options[option_name] = option_value
     return options
 
+def get_field_value(xml_field, field_spec, product, variant, variant_options, store, channel_mappings):
+    """
+    Get field value based on field_spec format:
+    - "literal string" -> literal value
+    - metafields.custom.key -> metafield value
+    - variant.field -> variant field
+    - field -> product field
+    - "{template}" -> template with placeholders
+    - Special fields: availability, price, sale_price, size, color, google_product_category
+    """
+    import json
+    metafields = product.get('metafields', {})
+
+    # Special field handlers
+    if xml_field == 'availability':
+        return calculate_availability(variant)
+
+    if xml_field == 'description':
+        raw_value = extract_field_value(product, variant, field_spec, store)
+        return strip_html(raw_value)
+
+    if xml_field == 'size':
+        return variant_options.get('size') or variant_options.get('sizes') or variant_options.get('størrelse') or ''
+
+    if xml_field == 'color':
+        return variant_options.get('color') or variant_options.get('colour') or variant_options.get('farve') or ''
+
+    if xml_field == 'price' or field_spec == 'price':
+        compare_at = variant.get('compare_at_price')
+        current_price = variant.get('price', '')
+        if compare_at:
+            return f"{compare_at} {store['currency']}"
+        return f"{current_price} {store['currency']}"
+
+    if xml_field == 'sale_price' or field_spec == 'sale_price':
+        compare_at = variant.get('compare_at_price')
+        if compare_at:
+            current_price = variant.get('price', '')
+            return f"{current_price} {store['currency']}"
+        return ''
+
+    if xml_field == 'google_product_category':
+        product_type = product.get('product_type', '').lower()
+        category_map = channel_mappings.get('product_type_categories', {})
+        return category_map.get(product_type, category_map.get('default', ''))
+
+    # Handle metafields.namespace.key syntax
+    if isinstance(field_spec, str) and field_spec.startswith('metafields.'):
+        metafield_path = field_spec.replace('metafields.', '')
+        value = metafields.get(metafield_path, '')
+        # Also try with _global suffix as fallback
+        if not value:
+            value = metafields.get(f'{metafield_path}_global', '')
+        # Parse JSON array and get first element
+        if isinstance(value, str) and value.startswith('['):
+            try:
+                parsed = json.loads(value)
+                return parsed[0] if parsed else ''
+            except:
+                pass
+        return value
+
+    # Handle literal strings (no braces, no dots except in domains)
+    if isinstance(field_spec, str) and not field_spec.startswith('{') and '.' not in field_spec and not field_spec.startswith('variant'):
+        # Check if it's a known product field
+        known_fields = ['title', 'body_html', 'vendor', 'product_type', 'handle', 'id']
+        if field_spec in known_fields:
+            return product.get(field_spec, '')
+        # Otherwise treat as literal
+        return field_spec
+
+    # Handle template strings, variant fields, nested fields via existing function
+    return extract_field_value(product, variant, field_spec, store)
+
 def products_to_channel_xml(products, store, channel, mapping, channel_mappings):
     """
     Generate XML feed with one entry per variant.
@@ -360,39 +434,23 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
 
             for field_map in mapping['fields']:
                 for xml_field, field_spec in field_map.items():
-                    # Handle special fields
-                    if xml_field == 'availability':
-                        value = calculate_availability(variant)
-                    elif xml_field == 'description':
-                        # Strip HTML from description
-                        raw_value = extract_field_value(product, variant, field_spec, store)
-                        value = strip_html(raw_value)
-                    elif xml_field == 'size':
-                        # Check for various size option names
-                        value = variant_options.get('size') or variant_options.get('sizes') or variant_options.get('størrelse') or ''
-                    elif xml_field == 'color':
-                        # Check for various color option names
-                        value = variant_options.get('color') or variant_options.get('colour') or variant_options.get('farve') or ''
-                    elif xml_field == 'price':
-                        # Price should be original price (compare_at_price if on sale, otherwise regular price)
-                        compare_at = variant.get('compare_at_price')
-                        current_price = variant.get('price', '')
-                        if compare_at:
-                            value = f"{compare_at} {store['currency']}"
-                        else:
-                            value = f"{current_price} {store['currency']}"
-                    elif xml_field == 'sale_price':
-                        # Sale price is the discounted price (only when compare_at_price exists)
-                        compare_at = variant.get('compare_at_price')
-                        if compare_at:
-                            current_price = variant.get('price', '')
-                            value = f"{current_price} {store['currency']}"
-                        else:
-                            value = ''  # No sale price if not on sale
-                    elif xml_field == 'additional_image_link' and field_spec == 'additional_images':
-                        # Add multiple additional_image_link elements for images 2, 3, etc.
+                    # Handle product_highlight specially (dict with boolean metafield mappings)
+                    if xml_field == 'product_highlight' and isinstance(field_spec, dict):
+                        metafields = product.get('metafields', {})
+                        for metafield_key, label in field_spec.items():
+                            mf_value = metafields.get(f'custom.{metafield_key}', '')
+                            if mf_value == 'true' or mf_value == True:
+                                if channel == 'google':
+                                    hl_elem = SubElement(item, 'g:product_highlight')
+                                else:
+                                    hl_elem = SubElement(item, 'product_highlight')
+                                hl_elem.text = label
+                        continue  # Skip normal element creation
+
+                    # Handle additional_image_link (multiple elements)
+                    if xml_field == 'additional_image_link' and field_spec == 'additional_images':
                         images = product.get('images', [])
-                        for img in images[1:4]:  # Images 2, 3, 4 (index 1, 2, 3)
+                        for img in images[1:4]:
                             img_url = img.get('src', '')
                             if img_url:
                                 if channel == 'google':
@@ -400,55 +458,10 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
                                 else:
                                     img_elem = SubElement(item, 'additional_image_link')
                                 img_elem.text = img_url
-                        continue  # Skip normal element creation
-                    elif xml_field == 'google_product_category':
-                        # Look up category based on product_type
-                        product_type = product.get('product_type', '').lower()
-                        category_map = channel_mappings.get('product_type_categories', {})
-                        value = category_map.get(product_type, category_map.get('default', ''))
-                    elif xml_field == 'material':
-                        # Get material from metafield (prefer localized, fallback to global)
-                        metafields = product.get('metafields', {})
-                        value = metafields.get('custom.lining_material') or metafields.get('custom.lining_material_global', '')
-                    elif xml_field == 'product_highlight':
-                        # Build highlights from boolean metafields
-                        metafields = product.get('metafields', {})
-                        highlights = []
-                        if metafields.get('custom.water_resistant') == 'true' or metafields.get('custom.water_resistant') == True:
-                            highlights.append('Water resistant')
-                        if metafields.get('custom.removable_insole') == 'true' or metafields.get('custom.removable_insole') == True:
-                            highlights.append('Removable insole')
-                        if metafields.get('custom.tex_membrane') == 'true' or metafields.get('custom.tex_membrane') == True:
-                            highlights.append('TEX membrane')
-                        if metafields.get('custom.barefoot') == 'true' or metafields.get('custom.barefoot') == True:
-                            highlights.append('Barefoot friendly')
-                        # Add multiple product_highlight elements
-                        for highlight in highlights:
-                            if channel == 'google':
-                                hl_elem = SubElement(item, 'g:product_highlight')
-                            else:
-                                hl_elem = SubElement(item, 'product_highlight')
-                            hl_elem.text = highlight
-                        continue  # Skip normal element creation
-                    elif xml_field == 'custom_label_0':
-                        # Season from metafield
-                        metafields = product.get('metafields', {})
-                        seasons = metafields.get('custom.seasons', '')
-                        # Parse JSON array if needed
-                        if seasons.startswith('['):
-                            import json
-                            try:
-                                seasons_list = json.loads(seasons)
-                                value = seasons_list[0] if seasons_list else ''
-                            except:
-                                value = ''
-                        else:
-                            value = seasons
-                    elif xml_field == 'custom_label_1':
-                        # Product type from native Shopify field
-                        value = product.get('product_type', '')
-                    else:
-                        value = extract_field_value(product, variant, field_spec, store)
+                        continue
+
+                    # Determine field value based on field_spec
+                    value = get_field_value(xml_field, field_spec, product, variant, variant_options, store, channel_mappings)
 
                     # Use Google Shopping namespace for standard fields
                     if channel == 'google' and xml_field in ['id', 'title', 'description', 'link',

@@ -5,7 +5,6 @@ product_type_categories:
   socks: "Apparel & Accessories > Clothing > Underwear & Socks > Socks"
   measurement tools: "Business & Industrial > Retail > Foot Measuring Devices"
   care products: "Apparel & Accessories > Shoe Accessories > Shoe Care & Tools"
-  # Default: everything else is children's shoes
   default: "Apparel & Accessories > Shoes > Kids Shoes"
 
 channels:
@@ -19,21 +18,25 @@ channels:
       - image_link: images[0].src
       - additional_image_link: additional_images
       - availability: availability
-      - price: "{variant.price} {currency}"
-      - sale_price: "{variant.compare_at_price} {currency}"
-      - brand: "'bisgaard'"
+      - price: price
+      - sale_price: sale_price
+      - brand: "bisgaard"
       - gtin: variant.barcode
       - mpn: variant.sku
-      - condition: "'new'"
+      - condition: "new"
       - product_type: product_type
       - google_product_category: google_product_category
       - color: color
       - size: size
-      - age_group: "'kids'"
-      - gender: "'unisex'"
-      - material: metafield
-      - product_highlight: metafield
-      - custom_label_0: metafield
+      - age_group: "kids"
+      - gender: "unisex"
+      - material: metafields.custom.lining_material
+      - product_highlight:
+          water_resistant: "Water resistant"
+          removable_insole: "Removable insole"
+          tex_membrane: "TEX membrane"
+          barefoot: "Barefoot friendly"
+      - custom_label_0: metafields.custom.seasons
       - custom_label_1: product_type
   meta:
     fields:
@@ -45,14 +48,18 @@ channels:
       - image_link: images[0].src
       - additional_image_link: additional_images
       - availability: availability
-      - price: "{variant.price} {currency}"
-      - sale_price: "{variant.price} {currency}"
-      - brand: "'bisgaard'"
-      - condition: "'new'"
+      - price: price
+      - sale_price: sale_price
+      - brand: "bisgaard"
+      - condition: "new"
       - google_product_category: google_product_category
       - color: color
       - size: size
-      - material: metafield
-      - product_highlight: metafield
-      - custom_label_0: metafield
+      - material: metafields.custom.lining_material
+      - product_highlight:
+          water_resistant: "Water resistant"
+          removable_insole: "Removable insole"
+          tex_membrane: "TEX membrane"
+          barefoot: "Barefoot friendly"
+      - custom_label_0: metafields.custom.seasons
       - custom_label_1: product_type
