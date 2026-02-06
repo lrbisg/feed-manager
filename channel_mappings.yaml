@@ -37,7 +37,6 @@ channels:
           tex_membrane: "TEX membrane"
           barefoot: "Barefoot friendly"
       - custom_label_0: metafields.custom.seasons
-      - custom_label_1: product_type
   meta:
     fields:
       - id: variant.id
@@ -52,6 +51,7 @@ channels:
       - sale_price: sale_price
       - brand: "bisgaard"
       - condition: "new"
+      - product_type: product_type
       - google_product_category: google_product_category
       - color: color
       - size: size
@@ -62,4 +62,3 @@ channels:
           tex_membrane: "TEX membrane"
           barefoot: "Barefoot friendly"
       - custom_label_0: metafields.custom.seasons
-      - custom_label_1: product_type
