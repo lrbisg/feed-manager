@@ -497,7 +497,8 @@ def products_to_channel_xml(products, store, channel, mapping, channel_mappings)
                                                               'sale_price', 'additional_image_link',
                                                               'material', 'product_highlight',
                                                               'custom_label_0', 'custom_label_1',
-                                                              'google_product_category', 'age_group', 'gender']:
+                                                              'google_product_category', 'product_type',
+                                                              'age_group', 'gender']:
                         elem = SubElement(item, f'g:{xml_field}')
                     else:
                         elem = SubElement(item, xml_field)
