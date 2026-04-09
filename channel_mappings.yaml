@@ -1,11 +1,11 @@
-# Map Shopify product_type to Google product category
-# See: https://support.google.com/merchants/answer/6324436
+# Map Shopify product_type to Google product category (numeric IDs)
+# Full taxonomy: https://www.google.com/basepages/producttype/taxonomy-with-ids.en-US.txt
 product_type_categories:
-  rainwear: "Apparel & Accessories > Clothing > Outerwear > Rain Suits & Raincoats"
-  socks: "Apparel & Accessories > Clothing > Underwear & Socks > Socks"
-  measurement tools: "Business & Industrial > Retail > Foot Measuring Devices"
-  care products: "Apparel & Accessories > Shoe Accessories > Shoe Care & Tools"
-  default: "Apparel & Accessories > Shoes > Kids Shoes"
+  rainwear: "3066"        # Apparel & Accessories > Clothing > Outerwear > Rain Suits
+  socks: "209"            # Apparel & Accessories > Clothing > Underwear & Socks > Socks
+  measurement tools: "138"  # Business & Industrial > Retail
+  care products: "1933"   # Apparel & Accessories > Shoe Accessories
+  default: "187"          # Apparel & Accessories > Shoes
 
 channels:
   google:
