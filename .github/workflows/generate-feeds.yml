@@ -19,9 +19,14 @@ on:
 
 # Permissions needed for GitHub Pages deployment
 permissions:
-  contents: write
+  contents: read
   pages: write
   id-token: write
+
+# Only one Pages deployment at a time
+concurrency:
+  group: "pages"
+  cancel-in-progress: false
 
 jobs:
   generate-feeds:
@@ -50,15 +55,6 @@ jobs:
           SHOPIFY_CLIENT_SECRET: ${{ secrets.SHOPIFY_CLIENT_SECRET }}
           PYTHONUNBUFFERED: 1
 
-      - name: Commit and push feeds to docs/
-        run: |
-          git config user.name "GitHub Actions Bot"
-          git config user.email "actions@github.com"
-          git add docs/
-          git diff --quiet && git diff --staged --quiet || git commit -m "🤖 Auto-update feeds [skip ci]"
-          git pull --rebase origin main
-          git push
-
       - name: Upload feed artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -66,3 +62,19 @@ jobs:
           path: feeds/
           retention-days: 30
         if: always()  # Upload even if previous steps fail
+
+      - name: Upload GitHub Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: docs/
+
+  deploy:
+    needs: generate-feeds
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
