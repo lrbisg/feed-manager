@@ -15,9 +15,8 @@ venv/
 env/
 ENV/
 
-# Generated feeds (docs/index.html is hand-maintained and stays tracked)
+# Generated feeds (don't commit feeds/, only docs/)
 feeds/
-docs/*.xml.gz
 
 # IDE
 .vscode/
