@@ -15,7 +15,7 @@ client_secret: ${SHOPIFY_CLIENT_SECRET}
 stores:
   - name: FR
     shop_domain: bisgaardshoes-fr.myshopify.com
-    customer_domain: bisgaardshoes.fr
+    customer_domain: bisgaard.fr
     language: fr
     currency: EUR
   - name: EN
